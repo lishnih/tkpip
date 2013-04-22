@@ -2,19 +2,23 @@
 # coding=utf-8
 # Stan 2013-04-20
 
+from __future__ import ( division, absolute_import,
+                         print_function, unicode_literals )
+
 import threading, logging
 import pip
-from pip.backwardcompat import xmlrpclib
+
+from .backwardcompat import *
 
 
-# For updating information about packages from PyPI
+# For caching information about packages from PyPI
 
 
 class Cache(object):
     def __init__(self, query=[]):
         self.index_url = 'http://pypi.python.org/pypi'
         self.pypi = xmlrpclib.ServerProxy(self.index_url, pip.download.xmlrpclib_transport)
-        self.pypi_cache = {}
+        self.pypi_cache = {}    # key: name, ver, data, urls, releases
         self.query = query
         self.t = None
 
@@ -36,7 +40,7 @@ class Cache(object):
 
     def query_info(self, query, after_func=None):
         if self.t and self.t.isAlive():
-            logging.warning('Query is processing, new query skipped!')
+            logging.warning("Query is processing, new query skipped!")
             return
         self.t = threading.Thread(target=self.t_func, args=(self.cache_info, after_func, query))
         self.t.daemon = True
@@ -65,7 +69,7 @@ class Cache(object):
                     query = item['name']
                     break
             else:
-                logger.info("No packages found matching {}".format(query))
+                logging.info("No packages found matching {0}".format(query))
                 self.pypi_cache[query] = 'No found', {}, [], []
 
             releases = self.pypi.package_releases(query)

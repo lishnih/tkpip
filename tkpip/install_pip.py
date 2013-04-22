@@ -2,6 +2,9 @@
 # coding=utf-8
 # Stan 2012-10-03
 
+from __future__ import ( division, absolute_import,
+                         print_function, unicode_literals )
+
 import sys, os, tempfile, logging
 try:    import urllib2
 except: import urllib.request as urllib2
@@ -18,7 +21,7 @@ def step_1():
         url = "http://python-distribute.org/distribute_setup.py"
         dtemp = tempfile.mkdtemp()
         filename = download_file(url, dtemp)
-        os.system("{} {}".format(sys.executable, filename))
+        os.system("{0} {1}".format(sys.executable, filename))
 
 
 def step_2():
@@ -50,7 +53,7 @@ def download_file(url, desc=None):
         meta = u.info()
         meta_func = meta.getheaders if hasattr(meta, 'getheaders') else meta.get_all
         file_size = int(meta_func("Content-Length")[0])
-        logging.info("Downloading: %s Bytes: %s" % (url, file_size))
+        print("Downloading: %s Bytes: %s" % (url, file_size))
 
         file_size_dl = 0
         block_sz = 8192
@@ -63,7 +66,7 @@ def download_file(url, desc=None):
             f.write(buffer)
             status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
             status = status + chr(8)*(len(status)+1)
-            print(status),
+            print(status, end="")
 
     return filename
 
@@ -73,12 +76,12 @@ if __name__ == '__main__':
 
     step = int(sys.argv[1]) if len(sys.argv) > 1 else 1
 
-    func_name = 'step_{}'.format(step)
+    func_name = 'step_{0}'.format(step)
     f = globals()[func_name] if func_name in globals() else None
 
     if f:
-        logging.info("=== Step {} ===".format(step))
+        logging.info("=== Step {0} ===".format(step))
         res = f()
-        os.system("{} {} {}".format(sys.executable,
+        os.system("{0} {1} {2}".format(sys.executable,
                                     os.path.basename(__file__),
                                     step+1))

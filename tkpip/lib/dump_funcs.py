@@ -1,5 +1,9 @@
+#!/usr/bin/env python
 # coding=utf-8
 # Stan 2007-08-02
+
+from __future__ import ( division, absolute_import,
+                         print_function, unicode_literals )
 
 import sys
 
@@ -35,13 +39,13 @@ def plain(obj):
     if isinstance(obj, (list, tuple)):
         buf = u''
         for key in obj:
-            buf += u'  {}\n'.format(plain_val(key))
+            buf += u'  {0}\n'.format(plain_val(key))
         return buf
 
     if isinstance(obj, dict):
         buf = u''
         for key, val in obj.items():
-            buf += u'   {:18}: {}\n'.format(key, plain_val(val))
+            buf += u'   {0:18}: {1}\n'.format(key, plain_val(val))
         return buf
 
     dirs_buf = u''
@@ -49,7 +53,7 @@ def plain(obj):
         val = getattr(obj, key)
         if not callable(val):
             if key[0:2] != '__':
-                dirs_buf += u'{:20}: {}\n'.format(key, plain_val(val))
+                dirs_buf += u'{0:20}: {1}\n'.format(key, plain_val(val))
 
     dirs_buf += u'\n'
 

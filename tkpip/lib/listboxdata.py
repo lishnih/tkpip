@@ -2,22 +2,22 @@
 # coding=utf-8
 # Stan 2013-04-20
 
+from __future__ import ( division, absolute_import,
+                         print_function, unicode_literals )
+
 import sys, logging
 
-if sys.version_info >= (3, 0):
-    from tkinter import *
-else:
-    from Tkinter import *
+from .backwardcompat import *
 
 
 # recipe from http://code.activestate.com/recipes/410646-tkinter-listbox-example/
-class ListBoxData(Listbox):
+class ListBoxData(tkinter.Listbox):
     def __init__(self, master=None):
-        Listbox.__init__(self, master)
+        tkinter.Listbox.__init__(self, master)
         ListBoxData.clear(self)
 
     def clear(self):
-        Listbox.delete(self, 0, END)
+        tkinter.Listbox.delete(self, 0, tkinter.END)
         self._selected = None
         self._values = []
         self._datas = []
@@ -47,7 +47,7 @@ class ListBoxData(Listbox):
             value = self._values[self._selected]
             data = self._datas[self._selected]
         except IndexError:
-            logging.warning("Index Error: {}!".format(self._selected))
+            logging.warning("Index Error: {0}!".format(self._selected))
             value = None
             data = None
         return self._selected, value, data
@@ -64,7 +64,7 @@ class ListBoxData(Listbox):
 
     def insert_data(self, pos, label, data, **kw):
         pos = self.index(pos)
-        Listbox.insert(self, pos, label, **kw)
+        tkinter.Listbox.insert(self, pos, label, **kw)
         self._values.insert(pos+1, label)
         self._datas.insert(pos+1, data)
 
@@ -77,10 +77,10 @@ class ListBoxData(Listbox):
     def insert_items(self, items):
         if isinstance(items, list):
             for key in sorted(items):
-                self.insert(END, key)
+                self.insert(tkinter.END, key)
         elif isinstance(items, dict):
             for key in sorted(items.keys()):
-                self.insert_data(END, key, items.get(key))
+                self.insert_data(tkinter.END, key, items.get(key))
 
 
 def test():
@@ -88,7 +88,7 @@ def test():
 
     # Listbox Widget
     listbox1 = ListBoxData(root)
-    lb1_yscrollbar = Scrollbar(root, orient=VERTICAL, command=listbox1.yview)
+    lb1_yscrollbar = Scrollbar(root, orient=tkinter.VERTICAL, command=listbox1.yview)
     listbox1['yscrollcommand'] = lb1_yscrollbar.set
 
     # Pack

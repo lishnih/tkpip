@@ -2,6 +2,9 @@
 # coding=utf-8
 # Stan 2013-04-06
 
+from __future__ import ( division, absolute_import,
+                         print_function, unicode_literals )
+
 import sys, os, re, logging
 
 # Packages pkg_resources, pip required!
@@ -12,19 +15,12 @@ except:
     logging.warning("Restart required!")
     sys.exit(0)
 
-if sys.version_info >= (3, 0):
-    from tkinter import *
-    from tkinter.font import Font
-    from tkinter.filedialog import askopenfilename, asksaveasfilename
-else:
-    from Tkinter import *
-    from tkFont import Font
-    from tkFileDialog import askopenfilename, asksaveasfilename
-
 try:
-    from tkpip.lib.listboxtext import ListBoxText
-    from tkpip.lib.cache import Cache
+    from .lib.backwardcompat import *
+    from .lib.listboxtext import ListBoxText
+    from .lib.cache import Cache
 except:
+    from lib.backwardcompat import *
     from lib.listboxtext import ListBoxText
     from lib.cache import Cache
 
@@ -35,16 +31,16 @@ active_distros = pkg_resources.WorkingSet()
 
 
 # recipe from http://effbot.org/zone/tkinter-menubar.htm
-class AppUI(Tk):
+class AppUI(tkinter.Tk):
     def __init__(self):
-        Tk.__init__(self)
+        tkinter.Tk.__init__(self)
         self.title("tkPip")
 
         self.listbox = None
 
-        self.menubar = Menu(self)
+        self.menubar = tkinter.Menu(self)
 
-        menu = Menu(self.menubar, tearoff=0)
+        menu = tkinter.Menu(self.menubar, tearoff=0)
         self.menubar.add_cascade(label="File", menu=menu)
         menu.add_command(command=self.onLoadSitePackages, label="Load site packages")
         menu.add_command(command=self.onLoadPipPackages,  label="Load pip packages")
@@ -54,18 +50,18 @@ class AppUI(Tk):
         menu.add_separator()
         menu.add_command(label="Exit", command=self.quit)
 
-        menu = Menu(self.menubar, tearoff=0)
+        menu = tkinter.Menu(self.menubar, tearoff=0)
         self.menubar.add_cascade(label="Dist", menu=menu)
         menu.add_command(command=self.onInstall,   label="Install")
         menu.add_command(command=self.onUpgrade,   label="Upgrade")
         menu.add_command(command=self.onUninstall, label="Uninstall")
 
-        menu = Menu(self.menubar, tearoff=0)
+        menu = tkinter.Menu(self.menubar, tearoff=0)
         self.menubar.add_cascade(label="Debug", menu=menu)
         menu.add_command(command=self.onPypiCache, label="Pypi Cache")
         menu.add_command(command=self.onPrintData, label="Print Data")
 
-        menu = Menu(self.menubar, tearoff=0)
+        menu = tkinter.Menu(self.menubar, tearoff=0)
         self.menubar.add_cascade(label="Help", menu=menu)
         menu.add_command(command=self.onAbout, label="About")
 
@@ -101,9 +97,9 @@ class AppUI(Tk):
         key = data['key']
         active = data['active']
         if active is None:
-            label = u"{} [I]".format(key)
+            label = "{0} [I]".format(key)
         else:
-            label = u"{} {}".format(key, data['dist'].version)
+            label = "{0} {1}".format(key, data['dist'].version)
         return label
 
     def get_style(self, data):
@@ -175,7 +171,7 @@ class AppUI(Tk):
             if filename:
                 with open(filename, 'w') as f:
                     for key in self.listbox.keys():
-                        f.write("{}\n".format(key))
+                        f.write("{0}\n".format(key))
 
     def onInstall(self):
         pass
@@ -188,7 +184,7 @@ class AppUI(Tk):
 
     def onPypiCache(self):
         for key, name, ver, data, urls, releases in c:
-            print("{} [{}]: {} {!r}".format(key, name, ver, releases))
+            print("{0} [{1}]: {2} {3!r}".format(key, name, ver, releases))
             print(repr(data)[:200] + '...')
             print(repr(urls)[:200] + '...')
 
@@ -209,18 +205,18 @@ def main():
 
     # Text Widget
     dFont1 = Font(family="Courier", size=10)
-    text1 = Text(root, font=dFont1)
-    text1_yscrollbar = Scrollbar(root, orient=VERTICAL, command=text1.yview)
+    text1 = tkinter.Text(root, font=dFont1)
+    text1_yscrollbar = tkinter.Scrollbar(root, orient=tkinter.VERTICAL, command=text1.yview)
     text1['yscrollcommand'] = text1_yscrollbar.set
 
     # Listbox Widget
     listbox1 = ListBoxText(root, text1, c)
-    lb1_yscrollbar = Scrollbar(root, orient=VERTICAL, command=listbox1.yview)
+    lb1_yscrollbar = tkinter.Scrollbar(root, orient=tkinter.VERTICAL, command=listbox1.yview)
     listbox1['yscrollcommand'] = lb1_yscrollbar.set
 
     # Env info
-    var = StringVar()
-    label1 = Label(root, textvariable=var, anchor=W)
+    var = tkinter.StringVar()
+    label1 = tkinter.Label(root, textvariable=var, anchor=tkinter.W)
     var.set(sys.executable)
 
     # Bind listbox1 to root

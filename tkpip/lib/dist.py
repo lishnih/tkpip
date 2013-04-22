@@ -2,6 +2,9 @@
 # coding=utf-8
 # Stan 2013-04-20
 
+from __future__ import ( division, absolute_import,
+                         print_function, unicode_literals )
+
 import logging
 from pip.commands import install
 
