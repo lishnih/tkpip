@@ -5,15 +5,13 @@
 from __future__ import ( division, absolute_import,
                          print_function, unicode_literals )
 
-import sys, pprint
+import sys
 
 from .backwardcompat import *
 from .dist import *
 from .dump_funcs import plain
 from .listboxdata import ListBoxData
 
-
-pp = pprint.PrettyPrinter(indent=4)
 
 class ListBoxText(ListBoxData):
     def __init__(self, master=None, text=None, cache={}):
@@ -45,7 +43,7 @@ class ListBoxText(ListBoxData):
                     self._text.insert(tkinter.END, text)
                     return
 
-                # Информация об установленном пакете
+                # РРЅС„РѕСЂРјР°С†РёСЏ РѕР± СѓСЃС‚Р°РЅРѕРІР»РµРЅРЅРѕРј РїР°РєРµС‚Рµ
                 dist = data.get('dist')
                 if dist:
                     installed = dist.version
@@ -56,12 +54,12 @@ class ListBoxText(ListBoxData):
                     state = 'none'
                     dist_dump = "none\n"
 
-                # Информация из Pypi
+                # РРЅС„РѕСЂРјР°С†РёСЏ РёР· Pypi
                 name, ver, data, urls, releases = self._cache.get(key)
-                data_dump = pp.pformat(data)
-                urls_dump = u''
+                data_dump = plain(data)
+                urls_dump = ""
                 for i in urls:
-                    urls_dump += "{0}\n---\n".format(pp.pformat(i))
+                    urls_dump += "{0}\n---\n".format(plain(i))
 
                 text = """{0} [{1}] ({2})
 Installed: {3}

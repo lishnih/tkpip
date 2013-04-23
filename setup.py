@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# coding=utf-8
+
 import sys, os
 from setuptools import setup
 
@@ -8,8 +10,8 @@ if PY3:
     if py_version < (3, 3):
         raise RuntimeError('On Python 3, Index requires Python 3.3 or better')
 else:
-    if py_version < (2, 7):
-        raise RuntimeError('On Python 2, Index requires Python 2.7 or better')
+    if py_version < (2, 6):
+        raise RuntimeError('On Python 2, Index requires Python 2.6 or better')
 
 here = os.path.abspath(os.path.dirname(__file__))
 try:
@@ -32,10 +34,7 @@ if __name__ == '__main__':
         url = 'http://github.com/lishnih/tkpip',
         packages = ['tkpip', 'tkpip/lib'],
         scripts = [],
-        package_data = {
-                        'tkpip': [
-                        ],
-                       },
+        package_data = dict(tkpip=[]),
         description = 'Tk Pip',
         long_description = __doc__,
         platforms = 'any',
@@ -44,15 +43,12 @@ if __name__ == '__main__':
         install_requires = install_requires,
         classifiers = [
             'Development Status :: 3 - Alpha',
-            'Environment :: Win32 (MS Windows)',
-            'Environment :: X11 Applications',
             'Intended Audience :: Developers',
             'License :: Public Domain',
             'Operating System :: OS Independent',
             'Programming Language :: Python',
             'Programming Language :: Python :: 2.7',
             'Programming Language :: Python :: 3.3',
-            'Topic :: Software Development :: Libraries :: Python Modules',
             'Topic :: Utilities',
         ],
     )
