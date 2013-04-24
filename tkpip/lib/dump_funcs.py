@@ -7,6 +7,8 @@ from __future__ import ( division, absolute_import,
 
 import sys
 
+from .backwardcompat import *
+
 
 def plain(obj, level=0):
     wrap = " " * 4 * level
@@ -15,7 +17,7 @@ def plain(obj, level=0):
         buf = "/is None/"
         return buf
 
-    if isinstance(obj, (int, float, long, complex, basestring, bytearray)):
+    if isinstance(obj, (int, float, complex, string_types, bytearray)):
         buf = "'{0}'".format(unicode(obj))
         return buf
 

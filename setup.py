@@ -33,7 +33,9 @@ if __name__ == '__main__':
         author_email = 'lishnih@gmail.com',
         url = 'http://github.com/lishnih/tkpip',
         packages = ['tkpip', 'tkpip/lib'],
-        scripts = [],
+        scripts = [
+            'scripts/run_tkpip.py',
+            ],
         package_data = dict(tkpip=[]),
         description = 'Tk Pip',
         long_description = __doc__,

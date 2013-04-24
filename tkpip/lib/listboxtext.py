@@ -5,19 +5,19 @@
 from __future__ import ( division, absolute_import,
                          print_function, unicode_literals )
 
-import sys
+import sys, pkg_resources
 
 from .backwardcompat import *
+from .cache import pipcache
 from .dist import *
 from .dump_funcs import plain
 from .listboxdata import ListBoxData
 
 
 class ListBoxText(ListBoxData):
-    def __init__(self, master=None, text=None, cache={}):
+    def __init__(self, master=None, text=None):
         ListBoxData.__init__(self, master)
         self._text = text
-        self._cache = cache
 
     def clear(self):
         ListBoxData.clear(self)
@@ -55,7 +55,7 @@ class ListBoxText(ListBoxData):
                     dist_dump = "none\n"
 
                 # Информация из Pypi
-                name, ver, data, urls, releases = self._cache.get(key)
+                name, ver, data, urls, releases = pipcache.get(key)
                 data_dump = plain(data)
                 urls_dump = ""
                 for i in urls:
@@ -76,11 +76,50 @@ Latest:    {4} {5!r}
 
     def onActivated(self, event=None):
         selected, value, data = self.get_selected()
-        if data is None:
-            dist = value
-            print("Installing {0}".format(dist))
-            dist_install(dist)
-        else:
-            dist = data['dist'].key
-            print("Upgrading {0}".format(dist))
-            dist_upgrade(dist)
+        key = data.get('key')
+        if key:
+            if '[I]' in value:
+                self.pkgInstall(key, selected)
+            elif '[U]' in value:
+                self.pkgUpgrade(key, selected)
+
+    def onInstall(self, event=None):
+        selected, value, data = self.get_selected()
+        key = data.get('key')
+        if key:
+            self.pkgInstall(key, selected)
+
+    def onUpgrade(self, event=None):
+        selected, value, data = self.get_selected()
+        key = data.get('key')
+        if key:
+            self.pkgUpgrade(key, selected)
+
+    def pkgInstall(self, key, selected):
+        print("Installing {0}".format(key))
+        dist_install(key)
+        self.update_value(key, selected)
+
+    def pkgUpgrade(self, key, selected):
+        print("Upgrading {0}".format(key))
+        dist_upgrade(key)
+        self.update_value(key, selected)
+
+    def update_value(self, key, selected):
+        distros = pkg_resources.Environment()
+        dist = distros[key]
+        dist = dist[0] if dist else None
+
+        if dist:
+            installed = dist.version
+
+            data = self.data(selected)
+            data['active'] = True   # !!!
+            data['dist'] = dist
+            data['_item'] = {}
+            label = "{0} {1}".format(key, installed)
+            self.setValue(selected, label)
+
+            name, ver, data, urls, releases = pipcache.get(key)
+            if installed == ver:
+                self.itemconfig(selected, background='')

@@ -16,16 +16,17 @@ except:
     sys.exit(0)
 
 try:
+    from .info import __VERSION__
     from .lib.backwardcompat import *
     from .lib.listboxtext import ListBoxText
-    from .lib.cache import Cache
+    from .lib.cache import pipcache
 except:
+    from info import __VERSION__
     from lib.backwardcompat import *
     from lib.listboxtext import ListBoxText
-    from lib.cache import Cache
+    from lib.cache import pipcache
 
 
-c = Cache()
 distros = pkg_resources.Environment()
 active_distros = pkg_resources.WorkingSet()
 
@@ -38,6 +39,9 @@ class AppUI(tkinter.Tk):
 
         self.listbox = None
 
+        self.status = tkinter.StringVar()
+        self.setStatus()
+
         self.menubar = tkinter.Menu(self)
 
         menu = tkinter.Menu(self.menubar, tearoff=0)
@@ -45,8 +49,9 @@ class AppUI(tkinter.Tk):
         menu.add_command(command=self.onLoadSitePackages, label="Load site packages")
         menu.add_command(command=self.onLoadPipPackages,  label="Load pip packages")
         menu.add_command(command=self.onLoadFile,         label="Load pkglist from file")
-        menu.add_command(command=self.onSaveFile,         label="Save pkglist to file")
         menu.add_command(command=self.onClear,            label="Clear pkglist")
+        menu.add_separator()
+        menu.add_command(command=self.onSaveFile,         label="Save pkglist to file")
         menu.add_separator()
         menu.add_command(label="Exit", command=self.quit)
 
@@ -54,7 +59,7 @@ class AppUI(tkinter.Tk):
         self.menubar.add_cascade(label="Dist", menu=menu)
         menu.add_command(command=self.onInstall,   label="Install")
         menu.add_command(command=self.onUpgrade,   label="Upgrade")
-        menu.add_command(command=self.onUninstall, label="Uninstall")
+#         menu.add_command(command=self.onUninstall, label="Uninstall")
 
         menu = tkinter.Menu(self.menubar, tearoff=0)
         self.menubar.add_cascade(label="Debug", menu=menu)
@@ -70,6 +75,12 @@ class AppUI(tkinter.Tk):
         except AttributeError:
             # master is a toplevel window (Python 1.4/Tkinter 1.63)
             self.tk.call(master, "config", "-menu", self.menubar)
+
+    def setStatus(self, text=""):
+        status = sys.executable
+        if text:
+            status += " :: " + text
+        self.status.set(status)
 
     def setListbox(self, listbox):
         self.listbox = listbox
@@ -123,7 +134,8 @@ class AppUI(tkinter.Tk):
                     self.append_item(items_dict, key, dist)
 
             self.listbox.insert_items(items_dict)
-            c.query_info(query_list, self.afterUpdate)
+            self.setStatus("Updating cache...")
+            pipcache.query_info(query_list, self.afterUpdate)
 
     def onLoadPipPackages(self):
         self.clearListbox()
@@ -137,7 +149,8 @@ class AppUI(tkinter.Tk):
                 self.append_item(items_dict, dist.key, dist)
 
             self.listbox.insert_items(items_dict)
-            c.query_info(query_list, self.afterUpdate)
+            self.setStatus("Updating cache...")
+            pipcache.query_info(query_list, self.afterUpdate)
 
     def onLoadFile(self):
         self.clearListbox()
@@ -160,10 +173,20 @@ class AppUI(tkinter.Tk):
                                 self.append_item(items_dict, key, dist)
 
                 self.listbox.insert_items(items_dict)
-                c.query_info(query_list, self.afterUpdate)
+                self.setStatus("Updating cache...")
+                pipcache.query_info(query_list, self.afterUpdate)
 
     def afterUpdate(self, *args):
-        pass
+        for i, value, data in self.listbox:
+            dist = data.get('dist')
+            if dist:
+                installed = dist.version
+                name, ver, data, urls, releases = pipcache.get(dist.key)
+                if installed != ver:
+                    self.listbox.setValue(i, value + ' [U]')
+                    self.listbox.itemconfig(i, dict(background='Lightgreen'))
+
+        self.setStatus()
 
     def onSaveFile(self):
         if self.listbox:
@@ -173,17 +196,26 @@ class AppUI(tkinter.Tk):
                     for key in self.listbox.keys():
                         f.write("{0}\n".format(key))
 
-    def onInstall(self):
-        pass
+    def onActivated(self, event=None):
+        self.setStatus("Processing...")
+        self.listbox.onActivated()
+        self.setStatus()
 
-    def onUpgrade(self):
-        pass
+    def onInstall(self, event=None):
+        self.setStatus("Processing...")
+        self.listbox.onInstall()
+        self.setStatus()
 
-    def onUninstall(self):
+    def onUpgrade(self, event=None):
+        self.setStatus("Processing...")
+        self.listbox.onUpgrade()
+        self.setStatus()
+
+    def onUninstall(self, event=None):
         pass
 
     def onPypiCache(self):
-        for key, name, ver, data, urls, releases in c:
+        for key, name, ver, data, urls, releases in pipcache:
             print("{0} [{1}]: {2} {3!r}".format(key, name, ver, releases))
             print(repr(data)[:200] + '...')
             print(repr(urls)[:200] + '...')
@@ -191,13 +223,12 @@ class AppUI(tkinter.Tk):
     def onPrintData(self):
         if self.listbox:
             print(self.listbox._selected)
-            for i in self.listbox._values:
-                print(i)
-            for i in self.listbox._datas:
-                print(i)
+            for i, value, data in self.listbox:
+                print(i, value)
+                print(data)
 
     def onAbout(self):
-        print('Version 0.1 alpha')
+        print('Version {0}'.format(__VERSION__))
 
 
 def main():
@@ -210,14 +241,12 @@ def main():
     text1['yscrollcommand'] = text1_yscrollbar.set
 
     # Listbox Widget
-    listbox1 = ListBoxText(root, text1, c)
+    listbox1 = ListBoxText(root, text1)
     lb1_yscrollbar = tkinter.Scrollbar(root, orient=tkinter.VERTICAL, command=listbox1.yview)
     listbox1['yscrollcommand'] = lb1_yscrollbar.set
 
     # Env info
-    var = tkinter.StringVar()
-    label1 = tkinter.Label(root, textvariable=var, anchor=tkinter.W)
-    var.set(sys.executable)
+    label1 = tkinter.Label(root, textvariable=root.status, anchor=tkinter.W)
 
     # Bind listbox1 to root
     root.setListbox(listbox1)
@@ -238,7 +267,7 @@ def main():
 
     # Bind
     listbox1.bind("<ButtonRelease-1>", listbox1.onClicked)
-    listbox1.bind("<Double-Button-1>", listbox1.onActivated)
+    listbox1.bind("<Double-Button-1>", root.onActivated)
 
     # Main loop
     root.mainloop()

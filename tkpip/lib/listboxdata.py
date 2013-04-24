@@ -13,22 +13,24 @@ from .backwardcompat import *
 # recipe from http://code.activestate.com/recipes/410646-tkinter-listbox-example/
 class ListBoxData(tkinter.Listbox):
     def __init__(self, master=None):
-        tkinter.Listbox.__init__(self, master)
+        self.v = tkinter.Variable(master)
+        tkinter.Listbox.__init__(self, master, listvariable=self.v)
         ListBoxData.clear(self)
 
     def clear(self):
-        tkinter.Listbox.delete(self, 0, tkinter.END)
+        self.v.set(())
         self._selected = None
-        self._values = []
         self._datas = []
 
     def __iter__(self):
-        for i in range(len(self._values)):
-            yield i, self._values[i], self._datas[i]
+        values = self.v.get()
+        for i in range(len(values)):
+            yield i, self.value(i), self.data(i)
 
     def value(self, pos):
         pos = self.index(pos)
-        return self._values[pos]
+        values = self.v.get()
+        return values[pos]
 
     def data(self, pos):
         pos = self.index(pos)
@@ -36,7 +38,9 @@ class ListBoxData(tkinter.Listbox):
 
     def setValue(self, pos, value):
         pos = self.index(pos)
-        self._values[pos] = value
+        values = list(self.v.get())
+        values[pos] = value
+        self.v.set(tuple(values))
 
     def setData(self, pos, data):
         pos = self.index(pos)
@@ -44,20 +48,20 @@ class ListBoxData(tkinter.Listbox):
 
     def get_selected(self):
         try:
-            value = self._values[self._selected]
-            data = self._datas[self._selected]
+            value = self.value(self._selected)
+            data = self.data(self._selected)
         except IndexError:
             logging.warning("Index Error: {0}!".format(self._selected))
             value = None
             data = None
         return self._selected, value, data
 
-    def delete(self, pos1, pos2=None):
-        pos1 = self.index(pos1)
-        pos2 = self.index(pos2)
-        Listbox.delete(self, pos1, pos2)
-        del self._values[pos1:pos2+1]
-        del self._datas[pos1:pos2+1]
+#     def delete(self, pos1, pos2=None):
+#         pos1 = self.index(pos1)
+#         pos2 = self.index(pos2)
+#         Listbox.delete(self, pos1, pos2)
+#         del self.v[pos1:pos2+1]
+#         del self._datas[pos1:pos2+1]
 
     def insert(self, pos, label, **kw):
         self.insert_data(pos, label, None, **kw)
@@ -65,7 +69,6 @@ class ListBoxData(tkinter.Listbox):
     def insert_data(self, pos, label, data, **kw):
         pos = self.index(pos)
         tkinter.Listbox.insert(self, pos, label, **kw)
-        self._values.insert(pos+1, label)
         self._datas.insert(pos+1, data)
 
         # itemconfig

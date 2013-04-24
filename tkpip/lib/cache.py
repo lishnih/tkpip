@@ -79,3 +79,5 @@ class Cache(object):
         urls = self.pypi.release_urls(query, ver) if ver else []
 
         self.pypi_cache[query.lower()] = query, ver, data, urls, releases
+
+pipcache = Cache()

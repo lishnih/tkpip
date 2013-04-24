@@ -7,21 +7,26 @@ from __future__ import ( division, absolute_import,
 
 import logging
 from pip.commands import install
+from pip.baseparser import ConfigOptionParser
 
 
 def dist_install(dist):
-    installcommand = install.InstallCommand()
+    parser = ConfigOptionParser(name=dist)
+    installcommand = install.InstallCommand(parser)
     options, args = installcommand.parser.parse_args([dist])
     try:
         installcommand.run(options, args)
     except Exception as e:   # DistributionNotFound
         logging.error(e)
+    print("finished!")        
 
 
 def dist_upgrade(dist):
-    installcommand = install.InstallCommand()
+    parser = ConfigOptionParser(name=dist)    
+    installcommand = install.InstallCommand(parser)
     options, args = installcommand.parser.parse_args(['-U', dist])
     try:
         installcommand.run(options, args)
     except Exception as e:   # DistributionNotFound
         logging.error(e)
+    print("finished!")

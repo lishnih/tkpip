@@ -45,6 +45,7 @@ if sys.version_info >= (3,):
         f.buffer.write(b(s))
 
     bytes = bytes
+    unicode = str
     string_types = (str,)
 
 else:
@@ -76,5 +77,6 @@ else:
         f.write(s)
 
     bytes = str
+    unicode = unicode
     string_types = (basestring,)
     cmp = cmp
