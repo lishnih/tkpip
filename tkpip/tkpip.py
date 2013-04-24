@@ -11,7 +11,7 @@ import sys, os, re, logging
 try:
     import pkg_resources, pip
 except:
-    os.system("install_pip.py")
+    os.system("{0} {1}".format(sys.executable, "install_pip.py"))
     logging.warning("Restart required!")
     sys.exit(0)
 
