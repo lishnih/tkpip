@@ -23,7 +23,7 @@ except IOError:
 install_requires = [
     ]
 
-from tkpip.info import __VERSION__
+from tkpip.lib.info import __VERSION__
 
 if __name__ == '__main__':
     setup(

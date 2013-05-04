@@ -16,12 +16,12 @@ except:
     sys.exit(0)
 
 try:
-    from .info import __VERSION__
+    from .lib.info import __VERSION__
     from .lib.backwardcompat import *
     from .lib.listboxtext import ListBoxText
     from .lib.cache import pipcache
 except:
-    from info import __VERSION__
+    from lib.info import __VERSION__
     from lib.backwardcompat import *
     from lib.listboxtext import ListBoxText
     from lib.cache import pipcache

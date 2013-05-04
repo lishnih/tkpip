@@ -13,7 +13,7 @@ except: import urllib.request as urllib2
 def step_1():
     logging.info("Installing Distribute")
     try:
-        import pkg_resources
+        import setuptools
         logging.info("Distribute already installed!")
     except:
         logging.info("Installing Distribute...")
