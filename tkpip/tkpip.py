@@ -193,8 +193,8 @@ class AppUI(tkinter.Tk):
             filename = asksaveasfilename()
             if filename:
                 with open(filename, 'w') as f:
-                    for key in self.listbox.keys():
-                        f.write("{0}\n".format(key))
+                    for i, value, data in self.listbox:
+                        f.write("{0}\n".format(value))
 
     def onActivated(self, event=None):
         self.setStatus("Processing...")
@@ -235,7 +235,7 @@ def main():
     root = AppUI()
 
     # Text Widget
-    dFont1 = Font(family="Courier", size=10)
+    dFont1 = Font(family="Courier", size=9)
     text1 = tkinter.Text(root, font=dFont1)
     text1_yscrollbar = tkinter.Scrollbar(root, orient=tkinter.VERTICAL, command=text1.yview)
     text1['yscrollcommand'] = text1_yscrollbar.set
@@ -267,6 +267,8 @@ def main():
 
     # Bind
     listbox1.bind("<ButtonRelease-1>", listbox1.onClicked)
+    listbox1.bind("<KeyPress-Up>", listbox1.onClicked)
+    listbox1.bind("<KeyPress-Down>", listbox1.onClicked)
     listbox1.bind("<Double-Button-1>", root.onActivated)
 
     # Main loop

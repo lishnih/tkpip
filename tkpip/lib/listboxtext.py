@@ -10,7 +10,7 @@ import sys, pkg_resources
 from .backwardcompat import *
 from .cache import pipcache
 from .dist import *
-from .dump_funcs import plain
+from .dump import plain
 from .listboxdata import ListBoxData
 
 

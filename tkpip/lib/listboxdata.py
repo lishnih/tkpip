@@ -83,7 +83,7 @@ class ListBoxData(tkinter.Listbox):
                 self.insert(tkinter.END, key)
         elif isinstance(items, dict):
             for key in sorted(items.keys()):
-                self.insert_data(tkinter.END, key, items.get(key))
+                self.insert_data(tkinter.END, key, items[key])
 
 
 def test():
