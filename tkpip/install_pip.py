@@ -83,5 +83,4 @@ if __name__ == '__main__':
         logging.info("=== Step {0} ===".format(step))
         res = f()
         os.system("{0} {1} {2}".format(sys.executable,
-                                    os.path.basename(__file__),
-                                    step+1))
+            os.path.basename(__file__), step+1))

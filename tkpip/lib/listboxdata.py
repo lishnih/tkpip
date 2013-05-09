@@ -11,10 +11,10 @@ from .backwardcompat import *
 
 
 # recipe from http://code.activestate.com/recipes/410646-tkinter-listbox-example/
-class ListBoxData(tkinter.Listbox):
+class ListBoxData(tk.Listbox):
     def __init__(self, master=None):
-        self.v = tkinter.Variable(master)
-        tkinter.Listbox.__init__(self, master, listvariable=self.v)
+        self.v = tk.Variable(master)
+        tk.Listbox.__init__(self, master, listvariable=self.v)
         ListBoxData.clear(self)
 
     def clear(self):
@@ -68,7 +68,7 @@ class ListBoxData(tkinter.Listbox):
 
     def insert_data(self, pos, label, data, **kw):
         pos = self.index(pos)
-        tkinter.Listbox.insert(self, pos, label, **kw)
+        tk.Listbox.insert(self, pos, label, **kw)
         self._datas.insert(pos+1, data)
 
         # itemconfig
@@ -80,10 +80,10 @@ class ListBoxData(tkinter.Listbox):
     def insert_items(self, items):
         if isinstance(items, list):
             for key in sorted(items):
-                self.insert(tkinter.END, key)
+                self.insert(tk.END, key)
         elif isinstance(items, dict):
             for key in sorted(items.keys()):
-                self.insert_data(tkinter.END, key, items[key])
+                self.insert_data(tk.END, key, items[key])
 
 
 def test():
@@ -91,7 +91,7 @@ def test():
 
     # Listbox Widget
     listbox1 = ListBoxData(root)
-    lb1_yscrollbar = Scrollbar(root, orient=tkinter.VERTICAL, command=listbox1.yview)
+    lb1_yscrollbar = Scrollbar(root, orient=tk.VERTICAL, command=listbox1.yview)
     listbox1['yscrollcommand'] = lb1_yscrollbar.set
 
     # Pack

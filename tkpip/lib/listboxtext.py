@@ -21,7 +21,7 @@ class ListBoxText(ListBoxData):
 
     def clear(self):
         ListBoxData.clear(self)
-        self._text.delete(1.0, tkinter.END)
+        self._text.delete(1.0, tk.END)
 
     def onClicked(self, event=None):
         selection = self.curselection()
@@ -29,18 +29,18 @@ class ListBoxText(ListBoxData):
             self._selected = int(selection[0])
 
             if self._text:
-                self._text.delete(1.0, tkinter.END)
+                self._text.delete(1.0, tk.END)
                 selected, value, data = self.get_selected()
 
                 if data is None:
                     text = "No data!"
-                    self._text.insert(tkinter.END, text)
+                    self._text.insert(tk.END, text)
                     return
 
                 key = data.get('key')
                 if key is None:
                     text = "Wrong data!"
-                    self._text.insert(tkinter.END, text)
+                    self._text.insert(tk.END, text)
                     return
 
                 # Информация об установленном пакете
@@ -72,7 +72,7 @@ Latest:    {4} {5!r}
 === Urls dump
 {8}""".format(key, name, state, installed, ver, releases, dist_dump, data_dump, urls_dump)
 
-                self._text.insert(tkinter.END, text)
+                self._text.insert(tk.END, text)
 
     def onActivated(self, event=None):
         selected, value, data = self.get_selected()

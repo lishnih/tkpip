@@ -5,18 +5,23 @@
 from __future__ import ( division, absolute_import,
                          print_function, unicode_literals )
 
-from .backwardcompat import *
+try:    from .backwardcompat import *
+except: from backwardcompat import *
+
+
+def plain_type(obj):
+    buf = unicode(type(obj)).replace("'", "").replace("type ", "")\
+          .replace("class ", "").replace("<", "[").replace(">", "]")
+    return buf
 
 
 def plain(obj, level=0):
     wrap = " " * 4 * level
 
     buf = ""
-#   buf = unicode(type(obj)).replace("'", "").replace("type ", "")\
-#         .replace("class ", "").replace("<", "[").replace(">", "]")
 
     if obj is None:
-        buf = "/is None/"
+        buf = "None"
         return buf
 
     if isinstance(obj, numeric_types):
@@ -61,10 +66,10 @@ def plain(obj, level=0):
         buf += wrap + "}"
         return buf
 
-    buf += "{0}{{\n".format(type(obj))
+    buf += "{0}{{\n".format(plain_type(obj))
     for key in dir(obj):
         try:                   val = getattr(obj, key)
-        except Exception as e: val = "*** {0} ***".format(type(e))
+        except Exception as e: val = "*** {0} ***".format(plain_type(e))
         if key[0:2] != '__' and not callable(val):
             buf += wrap + "    {0:16}: {1}\n".format(key, plain(val, level+1))
     buf += wrap + "}"

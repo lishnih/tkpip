@@ -20,8 +20,8 @@ if sys.version_info >= (3,):
     import xmlrpc.client as xmlrpclib
     import http.client as httplib
 
-    import tkinter
-    from tkinter import ttk
+    import tkinter as tk
+#   from tkinter import ttk
     from tkinter.font import Font
     from tkinter.filedialog import askopenfilename, asksaveasfilename
     from tkinter.messagebox import (showinfo, showwarning, showerror,
@@ -64,8 +64,8 @@ else:
     import xmlrpclib
     import httplib
 
-    import Tkinter as tkinter
-    import ttk
+    import Tkinter as tk
+#   import ttk
     from tkFont import Font
     from tkFileDialog import askopenfilename, asksaveasfilename
     from tkMessageBox import (showinfo, showwarning, showerror,
