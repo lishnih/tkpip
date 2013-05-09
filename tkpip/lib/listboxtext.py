@@ -76,34 +76,39 @@ Latest:    {4} {5!r}
 
     def onActivated(self, event=None):
         selected, value, data = self.get_selected()
-        key = data.get('key')
-        if key:
-            if '[I]' in value:
-                self.pkgInstall(key, selected)
-            elif '[U]' in value:
-                self.pkgUpgrade(key, selected)
+        if selected:
+            key = data.get('key')
+            if key:
+                if '[I]' in value:
+                    self.pkgInstall(key, selected)
+                elif '[U]' in value:
+                    self.pkgUpgrade(key, selected)
 
     def onInstall(self, event=None):
         selected, value, data = self.get_selected()
-        key = data.get('key')
-        if key:
-            self.pkgInstall(key, selected)
+        if selected:
+            key = data.get('key')
+            if key:
+                self.pkgInstall(key, selected)
 
     def onUpgrade(self, event=None):
         selected, value, data = self.get_selected()
-        key = data.get('key')
-        if key:
-            self.pkgUpgrade(key, selected)
+        if selected:
+            key = data.get('key')
+            if key:
+                self.pkgUpgrade(key, selected)
 
-    def pkgInstall(self, key, selected):
+    def pkgInstall(self, key, selected=None):
         print("Installing {0}".format(key))
         dist_install(key)
-        self.update_value(key, selected)
+        if selected is not None:
+            self.update_value(key, selected)
 
-    def pkgUpgrade(self, key, selected):
+    def pkgUpgrade(self, key, selected=None):
         print("Upgrading {0}".format(key))
         dist_upgrade(key)
-        self.update_value(key, selected)
+        if selected is not None:
+            self.update_value(key, selected)
 
     def update_value(self, key, selected):
         distros = pkg_resources.Environment()

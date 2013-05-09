@@ -28,13 +28,19 @@ class ListBoxData(tk.Listbox):
             yield i, self.value(i), self.data(i)
 
     def value(self, pos):
-        pos = self.index(pos)
-        values = self.v.get()
-        return values[pos]
+        try:
+            pos = self.index(pos)
+            values = self.v.get()
+            return values[pos]
+        except ValueError as e: # !!! ValueError: invalid literal for int() with base 10: 'None'
+            print(pos, e)
 
     def data(self, pos):
-        pos = self.index(pos)
-        return self._datas[pos]
+        try:
+            pos = self.index(pos)
+            return self._datas[pos]
+        except ValueError as e: # !!! ValueError: invalid literal for int() with base 10: 'None'
+            print(pos, e)
 
     def setValue(self, pos, value):
         pos = self.index(pos)
@@ -47,6 +53,8 @@ class ListBoxData(tk.Listbox):
         self._datas[pos] = data
 
     def get_selected(self):
+        if self._selected is None:
+            return None, None, None
         try:
             value = self.value(self._selected)
             data = self.data(self._selected)

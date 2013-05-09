@@ -27,10 +27,6 @@ except:
     from lib.cache import pipcache
 
 
-distros = pkg_resources.Environment()
-active_distros = pkg_resources.WorkingSet()
-
-
 # recipe from http://effbot.org/zone/tkinter-menubar.htm
 class AppUI(tk.Tk):
     def __init__(self):
@@ -38,6 +34,7 @@ class AppUI(tk.Tk):
         self.title("tkPip")
 
         self.listbox = None
+        self.mode = None
 
         self.status = tk.StringVar()
         self.setStatus()
@@ -49,17 +46,20 @@ class AppUI(tk.Tk):
         menu.add_command(command=self.onLoadSitePackages, label="Load site packages")
         menu.add_command(command=self.onLoadPipPackages,  label="Load pip packages")
         menu.add_command(command=self.onLoadFile,         label="Load pkglist from file")
-        menu.add_command(command=self.onClear,            label="Clear pkglist")
         menu.add_separator()
         menu.add_command(command=self.onSaveFile,         label="Save pkglist to file")
         menu.add_separator()
-        menu.add_command(label="Exit", command=self.quit)
+        menu.add_command(command=self.onClear,            label="Clear pkglist")
+        menu.add_separator()
+        menu.add_command(command=self.quit,               label="Exit")
 
         menu = tk.Menu(self.menubar, tearoff=0)
         self.menubar.add_cascade(label="Dist", menu=menu)
         menu.add_command(command=self.onInstall,   label="Install")
         menu.add_command(command=self.onUpgrade,   label="Upgrade")
-#         menu.add_command(command=self.onUninstall, label="Uninstall")
+#       menu.add_command(command=self.onUninstall, label="Uninstall")
+        menu.add_separator()
+        menu.add_command(command=self.onAppend,    label="Append a package")
 
         menu = tk.Menu(self.menubar, tearoff=0)
         self.menubar.add_cascade(label="Debug", menu=menu)
@@ -91,10 +91,18 @@ class AppUI(tk.Tk):
 
     def onClear(self):
         self.clearListbox()
+        self.mode = ""
+
+    def updateMode(self):
+        if self.mode == "SitePackages":
+            self.onLoadSitePackages()
+        elif self.mode == "PipPackages":
+            self.onLoadPipPackages()
+        self.setStatus()
 
     def append_item(self, items_dict, key, dist=None):
         if dist:
-            active = dist in active_distros
+            active = dist in pkg_resources.WorkingSet()
             version = dist.version
         else:
             active = None
@@ -124,8 +132,10 @@ class AppUI(tk.Tk):
 
     def onLoadSitePackages(self):
         self.clearListbox()
+        self.mode = "SitePackages"
 
         if self.listbox:
+            distros = pkg_resources.Environment()
             items_dict = {}
             query_list = []
             for key in distros:
@@ -139,6 +149,7 @@ class AppUI(tk.Tk):
 
     def onLoadPipPackages(self):
         self.clearListbox()
+        self.mode = "PipPackages"
 
         if self.listbox:
             distros = pip.get_installed_distributions()
@@ -154,6 +165,7 @@ class AppUI(tk.Tk):
 
     def onLoadFile(self):
         self.clearListbox()
+        self.mode = ""
 
         if self.listbox:
             filename = askopenfilename()
@@ -162,6 +174,7 @@ class AppUI(tk.Tk):
                 query_list = []
 
                 with open(filename) as f:
+                    distros = pkg_resources.Environment()
                     for line in f:
                         line_list = line.split()
                         if line_list:
@@ -178,13 +191,14 @@ class AppUI(tk.Tk):
 
     def afterUpdate(self, *args):
         for i, value, data in self.listbox:
-            dist = data.get('dist')
-            if dist:
-                installed = dist.version
-                name, ver, data, urls, releases = pipcache.get(dist.key)
-                if installed != ver:
-                    self.listbox.setValue(i, value + ' [U]')
-                    self.listbox.itemconfig(i, dict(background='Lightgreen'))
+            if value and data:        
+                dist = data.get('dist')
+                if dist:
+                    installed = dist.version
+                    name, ver, data, urls, releases = pipcache.get(dist.key)
+                    if installed != ver:
+                        self.listbox.setValue(i, value + ' [U]')
+                        self.listbox.itemconfig(i, dict(background='Lightgreen'))
 
         self.setStatus()
 
@@ -194,25 +208,47 @@ class AppUI(tk.Tk):
             if filename:
                 with open(filename, 'w') as f:
                     for i, value, data in self.listbox:
-                        f.write("{0}\n".format(value))
+                        if value:                    
+                            f.write("{0}\n".format(value))
 
     def onActivated(self, event=None):
         self.setStatus("Processing...")
         self.listbox.onActivated()
-        self.setStatus()
+        self.updateMode()
 
     def onInstall(self, event=None):
         self.setStatus("Processing...")
         self.listbox.onInstall()
-        self.setStatus()
+        self.updateMode()
 
     def onUpgrade(self, event=None):
         self.setStatus("Processing...")
         self.listbox.onUpgrade()
-        self.setStatus()
+        self.updateMode()
 
     def onUninstall(self, event=None):
-        pass
+        self.setStatus("Processing...")
+#       self.listbox.onUninstall()
+        self.updateMode()
+
+    def onAppendPkg(self, event=None):
+        pkgname = self.ask_entry1.get().strip()
+        self.ask.destroy()
+        if pkgname:
+            self.setStatus("Processing...")
+            self.listbox.pkgInstall(pkgname)
+            self.updateMode()
+
+    def onAppend(self, event=None):
+        self.ask = tk.Toplevel()
+        self.ask.title("Enter a package name")
+        self.ask_entry1 = tk.Entry(self.ask)
+        self.ask_entry1["width"] = 50
+        self.ask_entry1.pack(side=tk.LEFT)
+        self.ask_entry1.pack()
+        button1 = tk.Button(self.ask, text="Submit", command=self.onAppendPkg)
+        button1.pack()
+        self.ask_entry1.focus_set()                
 
     def onPypiCache(self):
         for key, name, ver, data, urls, releases in pipcache:
