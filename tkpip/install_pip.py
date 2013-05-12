@@ -6,16 +6,21 @@ from __future__ import ( division, absolute_import,
                          print_function, unicode_literals )
 
 import sys, os, tempfile, logging
-try:    import urllib2
-except: import urllib.request as urllib2
+
+if sys.version_info >= (3,):
+    import urllib.request as urllib2
+    import urllib.parse as urlparse
+else:
+    import urllib2
+    import urlparse
 
 
 def step_1():
-    logging.info("Installing Distribute")
+    logging.info("Checking Distribute")
     try:
         import setuptools
-        logging.info("Distribute already installed!")
-    except:
+        logging.info("Distribute installed!")
+    except ImportError:
         logging.info("Installing Distribute...")
 
         url = "http://python-distribute.org/distribute_setup.py"
@@ -25,11 +30,11 @@ def step_1():
 
 
 def step_2():
-    logging.info("Installing Pip")
+    logging.info("Checking Pip")
     try:
         import pip
-        logging.info("Pip already installed!")
-    except:
+        logging.info("Pip installed!")
+    except ImportError:
         logging.info("Installing Pip...")
 
         from pkg_resources import load_entry_point
@@ -43,17 +48,22 @@ def step_2():
 #recipe from http://stackoverflow.com/questions/22676/how-do-i-download-a-file-over-http-using-python
 def download_file(url, desc=None):
     u = urllib2.urlopen(url)
-    filename = url.split('/')[-1]
+
+    scheme, netloc, path, query, fragment = urlparse.urlsplit(url)
+    filename = os.path.basename(path)
     if not filename:
-        filename = 'file.dat'
+        filename = 'downloaded.file'
     if desc:
         filename = os.path.join(desc, filename)
 
     with open(filename, 'wb') as f:
         meta = u.info()
         meta_func = meta.getheaders if hasattr(meta, 'getheaders') else meta.get_all
-        file_size = int(meta_func("Content-Length")[0])
-        print("Downloading: %s Bytes: %s" % (url, file_size))
+        meta_length = meta_func("Content-Length")
+        file_size = None
+        if meta_length:
+            file_size = int(meta_length[0])
+        print("Downloading: {0} Bytes: {1}".format(url, file_size))
 
         file_size_dl = 0
         block_sz = 8192
@@ -64,9 +74,13 @@ def download_file(url, desc=None):
 
             file_size_dl += len(buffer)
             f.write(buffer)
-            status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
-            status = status + chr(8)*(len(status)+1)
+
+            status = "{0:16}".format(file_size_dl)
+            if file_size:
+                status += "   [{0:6.2f}%]".format(file_size_dl * 100 / file_size)
+            status += chr(13)
             print(status, end="")
+        print()
 
     return filename
 
