@@ -10,7 +10,7 @@ import sys, os, re, logging
 # Packages pkg_resources, pip required!
 try:
     import pkg_resources, pip
-except:
+except ImportError:
     os.system("{0} {1}".format(sys.executable, "install_pip.py"))
     logging.warning("Restart required!")
     sys.exit(0)
@@ -18,12 +18,16 @@ except:
 try:
     from .lib.info import __VERSION__
     from .lib.backwardcompat import *
-    from .lib.listboxtext import ListBoxText
+    from .lib.dist import *
+    from .lib.dump import plain
+    from .lib.listboxdata import ListBoxData
     from .lib.cache import pipcache
 except:
     from lib.info import __VERSION__
     from lib.backwardcompat import *
-    from lib.listboxtext import ListBoxText
+    from lib.dist import *
+    from lib.dump import plain
+    from lib.listboxdata import ListBoxData
     from lib.cache import pipcache
 
 
@@ -34,6 +38,8 @@ class AppUI(tk.Tk):
         self.title("tkPip")
 
         self.listbox = None
+        self.text = None
+
         self.mode = None
 
         self.status = tk.StringVar()
@@ -49,7 +55,7 @@ class AppUI(tk.Tk):
         menu.add_separator()
         menu.add_command(command=self.onSaveFile,         label="Save pkglist to file")
         menu.add_separator()
-        menu.add_command(command=self.onClear,            label="Clear pkglist")
+        menu.add_command(command=self.clear,              label="Clear pkglist")
         menu.add_separator()
         menu.add_command(command=self.quit,               label="Exit")
 
@@ -57,7 +63,7 @@ class AppUI(tk.Tk):
         self.menubar.add_cascade(label="Dist", menu=menu)
         menu.add_command(command=self.onInstall,   label="Install")
         menu.add_command(command=self.onUpgrade,   label="Upgrade")
-#       menu.add_command(command=self.onUninstall, label="Uninstall")
+        menu.add_command(command=self.onUninstall, label="Uninstall")
         menu.add_separator()
         menu.add_command(command=self.onAppend,    label="Append a package")
 
@@ -85,28 +91,25 @@ class AppUI(tk.Tk):
     def setListbox(self, listbox):
         self.listbox = listbox
 
-    def clearListbox(self):
+    def setText(self, text):
+        self.text = text
+
+    def clear(self):
+        self.mode = None
         if self.listbox:
             self.listbox.clear()
-
-    def onClear(self):
-        self.clearListbox()
-        self.mode = ""
+        if self.text:
+            self.text.delete(1.0, tk.END)
 
     def updateMode(self):
-        if self.mode == "SitePackages":
-            self.onLoadSitePackages()
-        elif self.mode == "PipPackages":
-            self.onLoadPipPackages()
-        self.setStatus()
+        self.setStatus()    # !!!
+        if self.mode:
+            self.mode()
+        # !!! необходимо возвращать курсор
 
     def append_item(self, items_dict, key, dist=None):
-        if dist:
-            active = dist in pkg_resources.WorkingSet()
-            version = dist.version
-        else:
-            active = None
-        data = dict(key=key, dist=dist, active=active)
+        active = dist in pkg_resources.WorkingSet() if dist else None
+        data = dict(key=key, active=active, dist=dist)
         label = self.get_label(data)
         style = self.get_style(data)
         items_dict[label] = data
@@ -131,8 +134,8 @@ class AppUI(tk.Tk):
         return style
 
     def onLoadSitePackages(self):
-        self.clearListbox()
-        self.mode = "SitePackages"
+        self.clear()
+        self.mode = self.onLoadSitePackages
 
         if self.listbox:
             distros = pkg_resources.Environment()
@@ -148,8 +151,8 @@ class AppUI(tk.Tk):
             pipcache.query_info(query_list, self.afterUpdate)
 
     def onLoadPipPackages(self):
-        self.clearListbox()
-        self.mode = "PipPackages"
+        self.clear()
+        self.mode = self.onLoadPipPackages
 
         if self.listbox:
             distros = pip.get_installed_distributions()
@@ -164,8 +167,8 @@ class AppUI(tk.Tk):
             pipcache.query_info(query_list, self.afterUpdate)
 
     def onLoadFile(self):
-        self.clearListbox()
-        self.mode = ""
+        self.clear()
+        self.mode = self.onLoadFile
 
         if self.listbox:
             filename = askopenfilename()
@@ -211,32 +214,64 @@ class AppUI(tk.Tk):
                         if value:                    
                             f.write("{0}\n".format(value))
 
+
     def onActivated(self, event=None):
-        self.setStatus("Processing...")
-        self.listbox.onActivated()
-        self.updateMode()
+        if self.listbox:
+            self.setStatus("Processing...")
+    
+            selected, value, data = self.listbox.get_selected()
+            if selected:
+                key = data.get('key')
+                if key:
+                    if '[I]' in value:
+                        dist_install(key)
+                    elif '[U]' in value:
+                        dist_upgrade(key)
+    
+            self.updateMode()
 
     def onInstall(self, event=None):
-        self.setStatus("Processing...")
-        self.listbox.onInstall()
-        self.updateMode()
+        if self.listbox:
+            self.setStatus("Processing...")
+    
+            selected, value, data = self.listbox.get_selected()
+            if selected:
+                key = data.get('key')
+                if key:
+                    dist_install(key)
+    
+            self.updateMode()
 
     def onUpgrade(self, event=None):
-        self.setStatus("Processing...")
-        self.listbox.onUpgrade()
-        self.updateMode()
+        if self.listbox:
+            self.setStatus("Processing...")
+    
+            selected, value, data = self.listbox.get_selected()
+            if selected:
+                key = data.get('key')
+                if key:
+                    dist_upgrade(key)
+    
+            self.updateMode()
 
     def onUninstall(self, event=None):
-        self.setStatus("Processing...")
-#       self.listbox.onUninstall()
-        self.updateMode()
+        if self.listbox:
+            self.setStatus("Processing...")
+    
+            selected, value, data = self.listbox.get_selected()
+            if selected:
+                key = data.get('key')
+                if key:
+                    dist_uninstall(key, data.get('dist'))
+    
+            self.updateMode()
 
     def onAppendPkg(self, event=None):
         pkgname = self.ask_entry1.get().strip()
         self.ask.destroy()
         if pkgname:
             self.setStatus("Processing...")
-            self.listbox.pkgInstall(pkgname)
+            dist_install(pkgname)
             self.updateMode()
 
     def onAppend(self, event=None):
@@ -258,13 +293,91 @@ class AppUI(tk.Tk):
 
     def onPrintData(self):
         if self.listbox:
-            print(self.listbox._selected)
+            selected, value, data = self.listbox.get_selected()
+            print(selected)
             for i, value, data in self.listbox:
                 print(i, value)
                 print(data)
 
     def onAbout(self):
         print('Version {0}'.format(__VERSION__))
+
+
+
+    def onClicked(self, event=None):
+        if self.text and self.listbox:
+            self.text.delete(1.0, tk.END)
+
+            selected, value, data = self.listbox.get_selected()
+
+            if data is None:
+                text = "No data!"
+                self.text.insert(tk.END, text)
+                return
+
+            key = data.get('key')
+            if key is None:
+                text = "Wrong data!"
+                self.text.insert(tk.END, text)
+                return
+
+            # Информация об установленном пакете
+            dist = data.get('dist')
+            if dist:
+                installed = dist.version
+                state = "active" if data['active'] else "non-active"
+                dist_dump = plain(dist)
+            else:
+                installed = "<Not installed>"
+                state = 'none'
+                dist_dump = "none\n"
+
+            # Информация из Pypi
+            name, ver, data, urls, releases = pipcache.get(key)
+            data_dump = plain(data)
+            urls_dump = ""
+            for i in urls:
+                urls_dump += "{0}\n---\n".format(plain(i))
+
+            text = """{0} [{1}] ({2})
+Installed: {3}
+Latest:    {4} {5!r}
+
+=== Dist dump
+{6}
+=== Data dump
+{7}
+=== Urls dump
+{8}""".format(key, name, state, installed, ver, releases, dist_dump, data_dump, urls_dump)
+
+            self.text.insert(tk.END, text)
+
+#     def update_value(self, key, selected):
+#         distros = pkg_resources.Environment()
+#         dist = distros[key]
+#         dist = dist[0] if dist else None
+# 
+#         if dist:
+#             installed = dist.version
+# 
+#             data = self.data(selected)
+#             data['active'] = True   # !!!
+#             data['dist'] = dist
+#             data['_item'] = {}
+#             label = "{0} {1}".format(key, installed)
+#             self.setValue(selected, label)
+# 
+#             name, ver, data, urls, releases = pipcache.get(key)
+#             if installed == ver:
+#                 self.itemconfig(selected, background='')
+
+
+
+
+
+
+
+
 
 
 def main():
@@ -277,15 +390,16 @@ def main():
     text1['yscrollcommand'] = text1_yscrollbar.set
 
     # Listbox Widget
-    listbox1 = ListBoxText(root, text1)
+    listbox1 = ListBoxData(root)
     lb1_yscrollbar = tk.Scrollbar(root, orient=tk.VERTICAL, command=listbox1.yview)
     listbox1['yscrollcommand'] = lb1_yscrollbar.set
 
     # Env info
     label1 = tk.Label(root, textvariable=root.status, anchor=tk.W)
 
-    # Bind listbox1 to root
+    # Bind text1 & listbox1 to root
     root.setListbox(listbox1)
+    root.setText(text1)
 
     # Grid
     root.grid_rowconfigure(0, weight=1)
@@ -302,9 +416,7 @@ def main():
     label1.grid(row=1, column=0, columnspan=4, sticky='nwes')
 
     # Bind
-    listbox1.bind("<ButtonRelease-1>", listbox1.onClicked)
-    listbox1.bind("<KeyPress-Up>", listbox1.onClicked)
-    listbox1.bind("<KeyPress-Down>", listbox1.onClicked)
+    listbox1.bind("<<ListboxSelect>>", root.onClicked)
     listbox1.bind("<Double-Button-1>", root.onActivated)
 
     # Main loop

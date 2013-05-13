@@ -19,7 +19,6 @@ class ListBoxData(tk.Listbox):
 
     def clear(self):
         self.v.set(())
-        self._selected = None
         self._datas = []
 
     def __iter__(self):
@@ -53,16 +52,21 @@ class ListBoxData(tk.Listbox):
         self._datas[pos] = data
 
     def get_selected(self):
-        if self._selected is None:
+        selection = self.curselection()
+        if selection:
+            selected = int(selection[0])
+
+            try:
+                value = self.value(selected)
+                data = self.data(selected)
+            except IndexError:
+                logging.warning("Index Error: {0}!".format(selected))
+                value = None
+                data = None
+            return selected, value, data
+
+        else:
             return None, None, None
-        try:
-            value = self.value(self._selected)
-            data = self.data(self._selected)
-        except IndexError:
-            logging.warning("Index Error: {0}!".format(self._selected))
-            value = None
-            data = None
-        return self._selected, value, data
 
 #     def delete(self, pos1, pos2=None):
 #         pos1 = self.index(pos1)
