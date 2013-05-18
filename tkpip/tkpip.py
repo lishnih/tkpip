@@ -37,8 +37,8 @@ class AppUI(tk.Tk):
         tk.Tk.__init__(self)
         self.title("tkPip")
 
-        self.listbox = None
-        self.text = None
+        self.Listbox = None
+        self.Text = None
 
         self.mode = None
 
@@ -82,24 +82,31 @@ class AppUI(tk.Tk):
             # master is a toplevel window (Python 1.4/Tkinter 1.63)
             self.tk.call(master, "config", "-menu", self.menubar)
 
+    def assignListbox(self, Listbox):
+        self.Listbox = Listbox
+
+    def assignText(self, Text):
+        self.Text = Text
+
+    def setText(self, text=""):
+        if self.Text:
+            self.Text.delete(1.0, tk.END)
+            self.Text.insert(tk.INSERT, "{0}\n".format(text))
+
     def setStatus(self, text=""):
         status = sys.executable
         if text:
             status += " :: " + text
         self.status.set(status)
 
-    def setListbox(self, listbox):
-        self.listbox = listbox
-
-    def setText(self, text):
-        self.text = text
+    def onAbout(self):
+        print("Version {0}".format(__VERSION__))
 
     def clear(self):
         self.mode = None
-        if self.listbox:
-            self.listbox.clear()
-        if self.text:
-            self.text.delete(1.0, tk.END)
+        if self.Listbox:
+            self.Listbox.clear()
+        self.setText()
 
     def updateMode(self):
         self.setStatus()    # !!!
@@ -137,7 +144,7 @@ class AppUI(tk.Tk):
         self.clear()
         self.mode = self.onLoadSitePackages
 
-        if self.listbox:
+        if self.Listbox:
             distros = pkg_resources.Environment()
             items_dict = {}
             query_list = []
@@ -146,7 +153,7 @@ class AppUI(tk.Tk):
                 for dist in distros[key]:
                     self.append_item(items_dict, key, dist)
 
-            self.listbox.insert_items(items_dict)
+            self.Listbox.insert_items(items_dict)
             self.setStatus("Updating cache...")
             pipcache.query_info(query_list, self.afterUpdate)
 
@@ -154,7 +161,7 @@ class AppUI(tk.Tk):
         self.clear()
         self.mode = self.onLoadPipPackages
 
-        if self.listbox:
+        if self.Listbox:
             distros = pip.get_installed_distributions()
             items_dict = {}
             query_list = []
@@ -162,7 +169,7 @@ class AppUI(tk.Tk):
                 query_list.append(dist.key)
                 self.append_item(items_dict, dist.key, dist)
 
-            self.listbox.insert_items(items_dict)
+            self.Listbox.insert_items(items_dict)
             self.setStatus("Updating cache...")
             pipcache.query_info(query_list, self.afterUpdate)
 
@@ -170,7 +177,7 @@ class AppUI(tk.Tk):
         self.clear()
         self.mode = self.onLoadFile
 
-        if self.listbox:
+        if self.Listbox:
             filename = askopenfilename()
             if filename:
                 items_dict = {}
@@ -188,38 +195,38 @@ class AppUI(tk.Tk):
                                 dist = dist[0] if dist else None
                                 self.append_item(items_dict, key, dist)
 
-                self.listbox.insert_items(items_dict)
+                self.Listbox.insert_items(items_dict)
                 self.setStatus("Updating cache...")
                 pipcache.query_info(query_list, self.afterUpdate)
 
     def afterUpdate(self, *args):
-        for i, value, data in self.listbox:
-            if value and data:        
+        for i, value, data in self.Listbox:
+            if value and data:
                 dist = data.get('dist')
                 if dist:
                     installed = dist.version
                     name, ver, data, urls, releases = pipcache.get(dist.key)
                     if installed != ver:
-                        self.listbox.setValue(i, value + ' [U]')
-                        self.listbox.itemconfig(i, dict(background='Lightgreen'))
+                        self.Listbox.setValue(i, value + ' [U]')
+                        self.Listbox.itemconfig(i, dict(background='Lightgreen'))
 
         self.setStatus()
 
     def onSaveFile(self):
-        if self.listbox:
+        if self.Listbox:
             filename = asksaveasfilename()
             if filename:
                 with open(filename, 'w') as f:
-                    for i, value, data in self.listbox:
-                        if value:                    
+                    for i, value, data in self.Listbox:
+                        if value:
                             f.write("{0}\n".format(value))
 
 
     def onActivated(self, event=None):
-        if self.listbox:
+        if self.Listbox:
             self.setStatus("Processing...")
-    
-            selected, value, data = self.listbox.get_selected()
+
+            selected, value, data = self.Listbox.get_selected()
             if selected:
                 key = data.get('key')
                 if key:
@@ -227,43 +234,43 @@ class AppUI(tk.Tk):
                         dist_install(key)
                     elif '[U]' in value:
                         dist_upgrade(key)
-    
+
             self.updateMode()
 
     def onInstall(self, event=None):
-        if self.listbox:
+        if self.Listbox:
             self.setStatus("Processing...")
-    
-            selected, value, data = self.listbox.get_selected()
+
+            selected, value, data = self.Listbox.get_selected()
             if selected:
                 key = data.get('key')
                 if key:
                     dist_install(key)
-    
+
             self.updateMode()
 
     def onUpgrade(self, event=None):
-        if self.listbox:
+        if self.Listbox:
             self.setStatus("Processing...")
-    
-            selected, value, data = self.listbox.get_selected()
+
+            selected, value, data = self.Listbox.get_selected()
             if selected:
                 key = data.get('key')
                 if key:
                     dist_upgrade(key)
-    
+
             self.updateMode()
 
     def onUninstall(self, event=None):
-        if self.listbox:
+        if self.Listbox:
             self.setStatus("Processing...")
-    
-            selected, value, data = self.listbox.get_selected()
+
+            selected, value, data = self.Listbox.get_selected()
             if selected:
                 key = data.get('key')
                 if key:
                     dist_uninstall(key, data.get('dist'))
-    
+
             self.updateMode()
 
     def onAppendPkg(self, event=None):
@@ -283,7 +290,7 @@ class AppUI(tk.Tk):
         self.ask_entry1.pack()
         button1 = tk.Button(self.ask, text="Submit", command=self.onAppendPkg)
         button1.pack()
-        self.ask_entry1.focus_set()                
+        self.ask_entry1.focus_set()
 
     def onPypiCache(self):
         for key, name, ver, data, urls, releases in pipcache:
@@ -292,33 +299,24 @@ class AppUI(tk.Tk):
             print(repr(urls)[:200] + '...')
 
     def onPrintData(self):
-        if self.listbox:
-            selected, value, data = self.listbox.get_selected()
+        if self.Listbox:
+            selected, value, data = self.Listbox.get_selected()
             print(selected)
-            for i, value, data in self.listbox:
+            for i, value, data in self.Listbox:
                 print(i, value)
                 print(data)
 
-    def onAbout(self):
-        print('Version {0}'.format(__VERSION__))
-
-
-
-    def onClicked(self, event=None):
-        if self.text and self.listbox:
-            self.text.delete(1.0, tk.END)
-
-            selected, value, data = self.listbox.get_selected()
+    def onSelect(self, event=None):
+        if self.Listbox:
+            selected, value, data = self.Listbox.get_selected()
 
             if data is None:
-                text = "No data!"
-                self.text.insert(tk.END, text)
+                self.setText("No data!")
                 return
 
             key = data.get('key')
             if key is None:
-                text = "Wrong data!"
-                self.text.insert(tk.END, text)
+                self.setText("Wrong data!")
                 return
 
             # Информация об установленном пакете
@@ -348,40 +346,42 @@ Latest:    {4} {5!r}
 === Data dump
 {7}
 === Urls dump
-{8}""".format(key, name, state, installed, ver, releases, dist_dump, data_dump, urls_dump)
+{8}""".format(key, name, state,
+              installed,
+              ver, releases,
+              dist_dump,
+              data_dump,
+              urls_dump)
 
-            self.text.insert(tk.END, text)
+            self.setText(text)
 
 #     def update_value(self, key, selected):
 #         distros = pkg_resources.Environment()
 #         dist = distros[key]
 #         dist = dist[0] if dist else None
-# 
+#
 #         if dist:
 #             installed = dist.version
-# 
+#
 #             data = self.data(selected)
 #             data['active'] = True   # !!!
 #             data['dist'] = dist
 #             data['_item'] = {}
 #             label = "{0} {1}".format(key, installed)
 #             self.setValue(selected, label)
-# 
+#
 #             name, ver, data, urls, releases = pipcache.get(key)
 #             if installed == ver:
 #                 self.itemconfig(selected, background='')
 
 
-
-
-
-
-
-
-
-
 def main():
     root = AppUI()
+
+    # Listbox Widget
+    listbox1 = ListBoxData(root)
+    lb1_yscrollbar = tk.Scrollbar(root, orient=tk.VERTICAL, command=listbox1.yview)
+    listbox1['yscrollcommand'] = lb1_yscrollbar.set
 
     # Text Widget
     dFont1 = Font(family="Courier", size=9)
@@ -389,17 +389,12 @@ def main():
     text1_yscrollbar = tk.Scrollbar(root, orient=tk.VERTICAL, command=text1.yview)
     text1['yscrollcommand'] = text1_yscrollbar.set
 
-    # Listbox Widget
-    listbox1 = ListBoxData(root)
-    lb1_yscrollbar = tk.Scrollbar(root, orient=tk.VERTICAL, command=listbox1.yview)
-    listbox1['yscrollcommand'] = lb1_yscrollbar.set
-
     # Env info
     label1 = tk.Label(root, textvariable=root.status, anchor=tk.W)
 
     # Bind text1 & listbox1 to root
-    root.setListbox(listbox1)
-    root.setText(text1)
+    root.assignListbox(listbox1)
+    root.assignText(text1)
 
     # Grid
     root.grid_rowconfigure(0, weight=1)
@@ -416,7 +411,7 @@ def main():
     label1.grid(row=1, column=0, columnspan=4, sticky='nwes')
 
     # Bind
-    listbox1.bind("<<ListboxSelect>>", root.onClicked)
+    listbox1.bind("<<ListboxSelect>>", root.onSelect)
     listbox1.bind("<Double-Button-1>", root.onActivated)
 
     # Main loop

@@ -21,7 +21,7 @@ def dist_install(name):
         return install_func(args)
     except Exception as e:
         logging.error(e)
-    print("finished!")        
+    print("finished!")
 
 
 def dist_upgrade(name):
@@ -34,7 +34,7 @@ def dist_upgrade(name):
         return install_func(args)
     except Exception as e:
         logging.error(e)
-    print("finished!")        
+    print("finished!")
 
 
 def dist_uninstall(name, dist=None):
@@ -50,4 +50,4 @@ def dist_uninstall(name, dist=None):
         return uninstall_func(args)
     except Exception as e:
         logging.error(e)
-    print("finished!")        
+    print("finished!")
