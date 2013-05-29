@@ -16,14 +16,14 @@ except ImportError:
     sys.exit(0)
 
 try:
-    from .lib.info import __VERSION__
+    from .lib.info import __version__
     from .lib.backwardcompat import *
     from .lib.dist import *
     from .lib.dump import plain
     from .lib.listboxdata import ListBoxData
     from .lib.cache import pipcache
 except:
-    from lib.info import __VERSION__
+    from lib.info import __version__
     from lib.backwardcompat import *
     from lib.dist import *
     from lib.dump import plain
@@ -100,7 +100,7 @@ class AppUI(tk.Tk):
         self.status.set(status)
 
     def onAbout(self):
-        print("Version {0}".format(__VERSION__))
+        print("Version {0}".format(__version__))
 
     def clear(self):
         self.mode = None

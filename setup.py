@@ -23,12 +23,12 @@ except IOError:
 install_requires = [
     ]
 
-from tkpip.lib.info import __VERSION__
+from tkpip.lib.info import __version__
 
 if __name__ == '__main__':
     setup(
         name = 'tkpip',
-        version = __VERSION__,
+        version = __version__,
         author = 'Stan',
         author_email = 'lishnih@gmail.com',
         url = 'http://github.com/lishnih/tkpip',
