@@ -16,14 +16,14 @@ else:
 
 
 def step_1():
-    logging.info("Checking Distribute")
+    logging.info("Checking Setuptools/Distribute")
     try:
         import setuptools
-        logging.info("Distribute installed!")
+        logging.info("Setuptools/Distribute installed!")
     except ImportError:
-        logging.info("Installing Distribute...")
+        logging.info("Installing Setuptools...")
 
-        url = "http://python-distribute.org/distribute_setup.py"
+        url = "https://bitbucket.org/pypa/setuptools/downloads/ez_setup.py"
         dtemp = tempfile.mkdtemp()
         filename = download_file(url, dtemp)
         os.system("{0} {1}".format(sys.executable, filename))
@@ -41,7 +41,7 @@ def step_2():
         packages_list = [
             'pip',
         ]
-        install_func = load_entry_point('distribute', 'console_scripts', 'easy_install')
+        install_func = load_entry_point('setuptools', 'console_scripts', 'easy_install')
         return install_func(packages_list)
 
 

@@ -8,7 +8,8 @@ from __future__ import ( division, absolute_import,
 import logging
 from pkg_resources import load_entry_point
 
-install_func = load_entry_point('distribute', 'console_scripts', 'easy_install')
+try:    install_func = load_entry_point('distribute', 'console_scripts', 'easy_install')
+except: install_func = load_entry_point('setuptools', 'console_scripts', 'easy_install')
 uninstall_func = load_entry_point('pip', 'console_scripts', 'pip')
 
 
