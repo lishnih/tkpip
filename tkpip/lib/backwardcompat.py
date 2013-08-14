@@ -14,6 +14,7 @@ if sys.version_info >= (3,):
     from queue import Queue, Empty
     from urllib.request import url2pathname, urlretrieve
     from email import message as emailmessage
+    import socketserver as SocketServer
     import urllib.parse as urllib
     import urllib.request as urllib2
     import urllib.parse as urlparse
@@ -21,11 +22,16 @@ if sys.version_info >= (3,):
     import http.client as httplib
 
     import tkinter as tk
-#   from tkinter import ttk
+    from tkinter import ttk
     from tkinter.font import Font
-    from tkinter.filedialog import askopenfilename, asksaveasfilename
+    from tkinter.filedialog import (askdirectory, askopenfilename,
+         asksaveasfilename)
     from tkinter.messagebox import (showinfo, showwarning, showerror,
          askquestion, askokcancel, askyesno, askretrycancel)
+
+    class aStr():
+        def __str__(self):
+            return self.__unicode__()
 
     def cmp(a, b):
         return (a > b) - (a < b)
@@ -52,12 +58,15 @@ if sys.version_info >= (3,):
     numeric_types = int, float, complex
     simple_types = int, float, complex, str, bytearray
     collections_types = list, tuple, set, frozenset
+    all_types = (int, float, complex, str, bytearray,
+                 list, tuple, set, frozenset, dict)
 
 else:
     from urllib2 import URLError, HTTPError
     from Queue import Queue, Empty
     from urllib import url2pathname, urlretrieve
     from email import Message as emailmessage
+    import SocketServer
     import urllib
     import urllib2
     import urlparse
@@ -65,11 +74,16 @@ else:
     import httplib
 
     import Tkinter as tk
-#   import ttk
+    import ttk
     from tkFont import Font
-    from tkFileDialog import askopenfilename, asksaveasfilename
+    from tkFileDialog import (askdirectory, askopenfilename,
+         asksaveasfilename)
     from tkMessageBox import (showinfo, showwarning, showerror,
          askquestion, askokcancel, askyesno, askretrycancel)
+
+    class aStr():
+        def __str__(self):
+            return self.__unicode__().encode('utf-8')
 
 #   cmp = cmp
     range = xrange
@@ -93,3 +107,5 @@ else:
     numeric_types = int, long, float, complex
     simple_types = int, long, float, complex, basestring, bytearray
     collections_types = list, tuple, set, frozenset
+    all_types = (int, long, float, complex, basestring, bytearray,
+                 list, tuple, set, frozenset, dict)
