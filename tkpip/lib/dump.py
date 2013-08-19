@@ -71,6 +71,7 @@ def plain(obj, level=0):
         buf += "{\n"
         for key in sorted(obj.keys()):
             val = obj[key]
+            key = plain(key)
             buf += wrap + "    {0:16}: {1}\n".format(key, plain(val, level+1))
         buf += wrap + "}"
         return buf
