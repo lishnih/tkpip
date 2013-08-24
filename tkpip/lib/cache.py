@@ -18,6 +18,7 @@ class Cache(object):
     def __init__(self, query=[]):
         self.index_url = 'http://pypi.python.org/pypi'
         try:
+            # Since pip version 1.4 raise AttributeError
             self.pypi = xmlrpclib.ServerProxy(self.index_url, pip.download.xmlrpclib_transport)
         except AttributeError:
             self.pypi = xmlrpclib.ServerProxy(self.index_url)
