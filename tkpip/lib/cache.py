@@ -17,7 +17,10 @@ from .backwardcompat import *
 class Cache(object):
     def __init__(self, query=[]):
         self.index_url = 'http://pypi.python.org/pypi'
-        self.pypi = xmlrpclib.ServerProxy(self.index_url, pip.download.xmlrpclib_transport)
+        try:
+            self.pypi = xmlrpclib.ServerProxy(self.index_url, pip.download.xmlrpclib_transport)
+        except AttributeError:
+            self.pypi = xmlrpclib.ServerProxy(self.index_url)
         self.pypi_cache = {}    # key: name, ver, data, urls, releases
         self.query = query
         self.t = None

@@ -59,8 +59,8 @@ class ListBoxData(tk.Listbox):
             try:
                 value = self.value(selected)
                 data = self.data(selected)
-            except IndexError:
-                logging.warning("Index Error: {0}!".format(selected))
+            except IndexError as e:
+                logging.warning("Index Error: {0} [{1}]!".format(selected, e))
                 value = None
                 data = None
             return selected, value, data
