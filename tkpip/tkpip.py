@@ -38,18 +38,31 @@ class ScrolledText(tk.Frame):
         tk.Frame.__init__(self, parent)
 
         self.text = tk.Text(self, relief=tk.SUNKEN)
-        self.text.pack(fill=tk.BOTH, side=tk.LEFT, expand=tk.YES)
 
-        sbar = tk.Scrollbar(self)
-        sbar.pack(fill=tk.Y, side=tk.RIGHT)
-        sbar.config(command=self.text.yview)
+        sbar1 = tk.Scrollbar(self, orient=tk.VERTICAL)
+        sbar1.config(command=self.text.yview)
+        self.text.config(yscrollcommand=sbar1.set)
 
-        self.text.config(yscrollcommand=sbar.set)
+        sbar2 = tk.Scrollbar(self, orient=tk.HORIZONTAL)
+        sbar2.config(command=self.text.xview)
+        self.text.config(xscrollcommand=sbar2.set)
+
+        self.text.config(wrap=tk.NONE)
         self.text.config(font=('Courier', 9, 'normal'))
+
+        # Grid
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_columnconfigure(1)
+
+        self.grid_rowconfigure(0, weight=1)
+        self.text.grid(row=0, column=0, sticky='nwes')
+        sbar1.grid(row=0, column=1, sticky='nwes')
+
+        self.grid_rowconfigure(1)
+        sbar2.grid(row=1, column=0, sticky='nwes')
 
     def appendText(self, text=""):
         self.text.insert(tk.END, text)
-#       self.text.mark_set(tk.INSERT, "1.0")
         self.text.focus()
 
     def setText(self, text=""):
@@ -137,29 +150,29 @@ class AppUI(tk.Tk):
 
         # Listbox Widget
         self.listbox = ListBoxData(self)
-        lb1_yscrollbar = tk.Scrollbar(self, orient=tk.VERTICAL, command=self.listbox.yview)
-        self.listbox['yscrollcommand'] = lb1_yscrollbar.set
-    
+        sbar = tk.Scrollbar(self, orient=tk.VERTICAL)
+        sbar.config(command=self.listbox.yview)
+        self.listbox.config(yscrollcommand=sbar.set)
+
         # Text Widget
         self.text = ScrolledText(self)
-    
+
         # Status Widget
         self.status = StatusBar(self)
-    
+
         # Grid
-        self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1, minsize=160)
         self.grid_columnconfigure(1)
-        self.grid_columnconfigure(2, weight=3, minsize=400)
-        self.grid_columnconfigure(3)
+        self.grid_columnconfigure(2, weight=10, minsize=400)
 
+        self.grid_rowconfigure(0, weight=1)
         self.listbox.grid(row=0, column=0, sticky='nwes')
-        lb1_yscrollbar.grid(row=0, column=1, sticky='nwes')
+        sbar.grid(row=0, column=1, sticky='nwes')
         self.text.grid(row=0, column=2, sticky='nwes')
-    
+
         self.grid_rowconfigure(1)
-        self.status.grid(row=1, column=0, columnspan=4, sticky='nwes')
-    
+        self.status.grid(row=1, column=0, columnspan=3, sticky='nwes')
+
         ### Bind ###
 
         self.listbox.bind("<<ListboxSelect>>", self.onSelect)
@@ -381,7 +394,7 @@ Latest:    {4} {5!r}
         self.text.setText()
 
     def updateMode(self):
-        self.status.setText()    # !!!
+        self.status.setText()
         if self.mode:
             self.mode()
         # !!! необходимо возвращать курсор
@@ -425,25 +438,6 @@ Latest:    {4} {5!r}
                         self.listbox.itemconfig(i, dict(background='Lightgreen'))
 
         self.status.setText()
-
-#     def update_value(self, key, selected):
-#         distros = pkg_resources.Environment()
-#         dist = distros[key]
-#         dist = dist[0] if dist else None
-#
-#         if dist:
-#             installed = dist.version
-#
-#             data = self.data(selected)
-#             data['active'] = True   # !!!
-#             data['dist'] = dist
-#             data['_item'] = {}
-#             label = "{0} {1}".format(key, installed)
-#             self.setValue(selected, label)
-#
-#             name, ver, data, urls, releases = pipcache.get(key)
-#             if installed == ver:
-#                 self.itemconfig(selected, background='')
 
 
 
