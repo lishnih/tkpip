@@ -69,7 +69,7 @@ def plain(obj, level=0):
 
     if isinstance(obj, dict):
         buf += "{\n"
-        for key in sorted(obj.keys()):
+        for key in sorted(obj.keys(), key=unicode):
             val = obj[key]
             key = plain(key)
             buf += wrap + "    {0:16}: {1}\n".format(key, plain(val, level+1))
