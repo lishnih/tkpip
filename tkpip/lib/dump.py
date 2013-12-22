@@ -44,8 +44,8 @@ def plain(obj, level=0):
         buf = "'{0}'".format(unicode(obj))
         return buf
 
-    if level > 5:
-        return repr(obj)
+    if level > 10:
+        return "repr: {0!r}".format(obj)
 
     buf = ""
     wrap = " " * 4 * level
@@ -77,7 +77,7 @@ def plain(obj, level=0):
         return buf
 
     if level > 2:
-        return repr(obj)
+        return "repr: {0!r}".format(obj)
 
     buf += "{0}{{\n".format(plain_type(obj))
     for key in dir(obj):
