@@ -18,14 +18,14 @@ except ImportError:
 
 
 try:
-    from .lib.info import __pkgname__, __description__, __version__
+    from . import __pkgname__, __description__, __version__
     from .lib.backwardcompat import *
     from .lib.dist import *
     from .lib.dump import plain
     from .lib.listboxdata import ListBoxData
     from .lib.cache import pipcache
 except:
-    from lib.info import __pkgname__, __description__, __version__
+    from __init__ import __pkgname__, __description__, __version__
     from lib.backwardcompat import *
     from lib.dist import *
     from lib.dump import plain

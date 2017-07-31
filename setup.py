@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+from __future__ import ( division, absolute_import,
+                         print_function, unicode_literals )
+
 import sys, os
-from setuptools import setup
+from setuptools import setup, find_packages
 
 py_version = sys.version_info[:2]
 PY3 = py_version[0] == 3
@@ -15,13 +18,13 @@ else:
 
 here = os.path.abspath(os.path.dirname(os.path.abspath(__file__)))
 try:
-    README = open(os.path.join(here, 'README.md')).read()
+    README = open(os.path.join(here, 'README.rst')).read()
     CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 except IOError:
     README = CHANGES = ''
 
 
-from tkpip.lib.info import __pkgname__, __description__, __version__
+from tkpip import __pkgname__, __description__, __version__
 
 
 if __name__ == '__main__':
@@ -29,17 +32,19 @@ if __name__ == '__main__':
         name = __pkgname__,
         description = __description__,
         version = __version__,
-        long_description = __doc__,
+        long_description = README,
 
         author = 'Stan',
         author_email = 'lishnih@gmail.com',
-        url = 'http://github.com/lishnih/tkpip',
+        url = 'https://github.com/lishnih/tkpip',
         license = 'Public Domain',
-        platforms = 'any',
-        keywords = ['Tk', 'Pip', 'Pypi'],
+        platforms = ['any'],
+        keywords = ['tk', 'pip', 'pypi'],
 
-        packages = [__pkgname__, __pkgname__+'/lib'],
-        package_data = {__pkgname__: []},
+        packages = find_packages(),
+
+#       package_data = {__pkgname__: []},
+
         scripts = [
             'scripts/run_tkpip.py',
         ],
